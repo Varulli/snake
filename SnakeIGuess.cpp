@@ -54,6 +54,7 @@ struct Point
 std::vector<Point> snake;
 
 Point apple(0,0);
+std::vector<Point> eatenApples;
 
 std::vector<unsigned char> inputBuffer;
 
@@ -73,15 +74,21 @@ bool snakeEatsSelf()
 
 void updateSnakePositions(unsigned char input)
 {
-	if (snake.back() == apple)
+	if (snake.front() == apple)
 	{
-		snake.push_back(Point( snake.back() ));
-
-		for (int i = snake.size() - 2; i > 0; i--)
-			snake[i] = snake[i - 1];
+		eatenApples.insert(eatenApples.begin(), Point(apple));
 
 		while (isInSnake(apple))
 			apple = Point(rand() % (fieldWidth - 2) + 1, rand() % (fieldHeight - 2) + 1);
+	}
+
+	if (!eatenApples.empty() && snake.back() == eatenApples.back())
+	{
+		snake.push_back(eatenApples.back());
+		eatenApples.pop_back();
+
+		for (int i = snake.size() - 2; i > 0; i--)
+			snake[i] = snake[i - 1];
 	}
 	else
 	{
@@ -214,22 +221,23 @@ int main()
 
 		// Render output
 		field[apple.y * fieldWidth + apple.x] = 2;
+
 		for (auto& section : snake)
-		{
 			field[section.y * fieldWidth + section.x] = 1;
-		}
+
+		for (auto& eatenApple : eatenApples)
+			field[eatenApple.y * fieldWidth + eatenApple.x] = 4;
 
 
 		// Draw field to screen
 		for (int x = 0; x < fieldWidth; x++)
 			for (int y = 0; y < fieldHeight; y++)
-				screen[(y + 2) * screenWidth + (x + 4)] = ".0*#"[field[y * fieldWidth + x]];
+				screen[(y + 2) * screenWidth + (x + 4)] = ".0*#@"[field[y * fieldWidth + x]];
+
+		field[apple.y * fieldWidth + apple.x] = 0;
 
 		for (auto& section : snake)
-		{
 			field[section.y * fieldWidth + section.x] = 0;
-		}
-		field[apple.y * fieldWidth + apple.x] = 0;
 
 		WriteConsoleOutputCharacterA(console, screen, screenWidth * screenHeight, { 0, 0 }, &bytesWritten);
 	}
