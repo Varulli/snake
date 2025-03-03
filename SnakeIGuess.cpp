@@ -6,15 +6,15 @@
 #include <vector>
 #include <ctime>
 
-int fieldWidth = 40;
-int fieldHeight = 20;
+int fieldWidth = 30;
+int fieldHeight = 15;
 unsigned char* field = nullptr;
 
-int screenWidth = 80;
-int screenHeight = 30;
+int screenWidth = 50;
+int screenHeight = 25;
 
 int tickCount = 0;
-int tickLimit = 2;
+int tickLimit = 3;
 
 char buffer[10];
 
@@ -53,10 +53,10 @@ struct Point
 
 std::vector<Point> snake;
 
-Point apple(0,0);
+Point apple(0, 0);
 std::vector<Point> eatenApples;
 
-std::vector<unsigned char> inputBuffer;
+std::vector<unsigned char> inputBuffer(3);
 
 bool isInSnake(Point& p)
 {
@@ -155,41 +155,62 @@ int main()
 			field[y * fieldWidth + x] = (x == 0 || x == fieldWidth - 1 || y == 0 || y == fieldHeight - 1) ? 3 : 0;
 
 	// Create snake
-	snake.push_back( Point(fieldWidth / 2, fieldHeight / 2) );
-	
+	snake.push_back(Point(fieldWidth / 2, fieldHeight / 2));
+
 	// Allocate screen
 	char* screen = new char[screenWidth * screenHeight];
 	for (int i = 0; i < screenWidth * screenHeight; i++) screen[i] = ' ';
 
 	HANDLE console = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
+	SMALL_RECT windowSize = { 0, 0, 1, 1 };
+	SetConsoleWindowInfo(console, TRUE, &windowSize);
+	SetConsoleScreenBufferSize(console, { (short)screenWidth, (short)screenHeight });
+	windowSize = { 0, 0, (short)(screenWidth - 1), (short)(screenHeight - 1) };
+	SetConsoleWindowInfo(console, TRUE, &windowSize);
 	SetConsoleActiveScreenBuffer(console);
 	DWORD bytesWritten = 0;
+
+	for (int i = 0; i < 9; i++) screen[2 * screenWidth + (fieldWidth + 5 + i)] = "CONTROLS:"[i];
+	for (int i = 0; i < 10; i++) screen[3 * screenWidth + (fieldWidth + 5 + i)] = "ARROW KEYS"[i];
 
 	// Seed rng
 	srand((int)time(nullptr));
 
+	// Draw initial field
+	for (int x = 0; x < fieldWidth; x++)
+		for (int y = 0; y < fieldHeight; y++)
+			screen[(y + 2) * screenWidth + (x + 4)] = ".0*#@"[field[y * fieldWidth + x]];
+
+	WriteConsoleOutputCharacterA(console, screen, screenWidth * screenHeight, { 0, 0 }, &bytesWritten);
+
 	//Initial input
-	switch (rand() % 4)
+	while (true)
 	{
-	case 0:
-		inputBuffer.push_back(VK_UP);
-		break;
-	case 1:
-		inputBuffer.push_back(VK_DOWN);
-		break;
-	case 2:
-		inputBuffer.push_back(VK_LEFT);
-		break;
-	case 3:
-		inputBuffer.push_back(VK_RIGHT);
-		break;
-	default:
-		break;
+		if (GetAsyncKeyState(VK_UP) != 0 || true)
+		{
+			addToInputBuffer(VK_UP);
+			break;
+		}
+		if (GetAsyncKeyState(VK_DOWN) != 0)
+		{
+			addToInputBuffer(VK_DOWN);
+			break;
+		}
+		if (GetAsyncKeyState(VK_LEFT) != 0)
+		{
+			addToInputBuffer(VK_LEFT);
+			break;
+		}
+		if (GetAsyncKeyState(VK_RIGHT) != 0)
+		{
+			addToInputBuffer(VK_RIGHT);
+			break;
+		}
 	}
 
 	//Initial apple position
 	apple = Point(rand() % (fieldWidth - 2) + 1, rand() % (fieldHeight - 2) + 1);
-	
+
 	bool done = false;
 
 	while (!done)
@@ -202,7 +223,7 @@ int main()
 
 			updateSnakePositions(inputBuffer[0]);
 		}
-		
+
 		// Input
 		if (GetAsyncKeyState(VK_UP) != 0) addToInputBuffer(VK_UP);
 		if (GetAsyncKeyState(VK_DOWN) != 0) addToInputBuffer(VK_DOWN);
@@ -242,5 +263,14 @@ int main()
 		WriteConsoleOutputCharacterA(console, screen, screenWidth * screenHeight, { 0, 0 }, &bytesWritten);
 	}
 
-    return 0;
+	// Game over screen
+	for (int i = 0; i < 9; i++) screen[6 * screenWidth + (fieldWidth + 5 + i)] = "GAME OVER"[i];
+	for (int i = 0; i < 9; i++) screen[7 * screenWidth + (fieldWidth + 5 + i)] = ' ';
+	for (int i = 0; i < 11; i++) screen[8 * screenWidth + (fieldWidth + 5 + i)] = "PRESS ENTER"[i];
+	for (int i = 0; i < 7; i++) screen[9 * screenWidth + (fieldWidth + 5 + i)] = "TO EXIT"[i];
+	WriteConsoleOutputCharacterA(console, screen, screenWidth * screenHeight, { 0, 0 }, &bytesWritten);
+
+	while (GetAsyncKeyState(VK_RETURN) == 0) {};
+
+	return 0;
 }
