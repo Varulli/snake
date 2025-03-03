@@ -15,4 +15,5 @@ Build and run using Visual Studio.
 ## Controls
 
 Arrow Keys: Move snake
+
 Enter: Quit
