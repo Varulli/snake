@@ -1,5 +1,4 @@
-// SnakeIGuess.cpp : This file contains the 'main' function. Program execution begins and ends there.
-//
+#define _WIN32_WINNT 0x0601
 
 #include <iostream>
 #include <Windows.h>
@@ -8,7 +7,7 @@
 
 int fieldWidth = 30;
 int fieldHeight = 15;
-unsigned char* field = nullptr;
+unsigned char *field = nullptr;
 
 int screenWidth = 50;
 int screenHeight = 25;
@@ -28,24 +27,24 @@ struct Point
 		this->y = y;
 	}
 
-	Point(const Point& p)
+	Point(const Point &p)
 	{
 		x = p.x;
 		y = p.y;
 	}
 
-	void operator=(const Point& p)
+	void operator=(const Point &p)
 	{
 		x = p.x;
 		y = p.y;
 	}
 
-	bool operator==(const Point& p)
+	bool operator==(const Point &p)
 	{
 		return x == p.x && y == p.y;
 	}
 
-	bool operator!=(const Point& p)
+	bool operator!=(const Point &p)
 	{
 		return x != p.x || y != p.y;
 	}
@@ -58,17 +57,19 @@ std::vector<Point> eatenApples;
 
 std::vector<unsigned char> inputBuffer(3);
 
-bool isInSnake(Point& p)
+bool isInSnake(Point &p)
 {
-	for (auto& section : snake)
-		if (p == section) return true;
+	for (auto &section : snake)
+		if (p == section)
+			return true;
 	return false;
 }
 
 bool snakeEatsSelf()
 {
 	for (auto it = snake.begin() + 1; it != snake.end(); it++)
-		if (snake.front() == *it) return true;
+		if (snake.front() == *it)
+			return true;
 	return false;
 }
 
@@ -158,22 +159,25 @@ int main()
 	snake.push_back(Point(fieldWidth / 2, fieldHeight / 2));
 
 	// Allocate screen
-	char* screen = new char[screenWidth * screenHeight];
-	for (int i = 0; i < screenWidth * screenHeight; i++) screen[i] = ' ';
+	char *screen = new char[screenWidth * screenHeight];
+	for (int i = 0; i < screenWidth * screenHeight; i++)
+		screen[i] = ' ';
 
 	HANDLE console = CreateConsoleScreenBuffer(GENERIC_READ | GENERIC_WRITE, 0, NULL, CONSOLE_TEXTMODE_BUFFER, NULL);
-	SMALL_RECT windowSize = { 0, 0, 1, 1 };
+	SMALL_RECT windowSize = {0, 0, 1, 1};
 	SetConsoleWindowInfo(console, TRUE, &windowSize);
-	SetConsoleScreenBufferSize(console, { (short)screenWidth, (short)screenHeight });
-	windowSize = { 0, 0, (short)(screenWidth - 1), (short)(screenHeight - 1) };
+	SetConsoleScreenBufferSize(console, {(short)screenWidth, (short)screenHeight});
+	windowSize = {0, 0, (short)(screenWidth - 1), (short)(screenHeight - 1)};
 	SetConsoleWindowInfo(console, TRUE, &windowSize);
-	CONSOLE_CURSOR_INFO cursorInfo = { 1, false };
+	CONSOLE_CURSOR_INFO cursorInfo = {1, false};
 	SetConsoleCursorInfo(console, &cursorInfo);
 	SetConsoleActiveScreenBuffer(console);
 	DWORD bytesWritten = 0;
 
-	for (int i = 0; i < 9; i++) screen[2 * screenWidth + (fieldWidth + 5 + i)] = "CONTROLS:"[i];
-	for (int i = 0; i < 10; i++) screen[3 * screenWidth + (fieldWidth + 5 + i)] = "ARROW KEYS"[i];
+	for (int i = 0; i < 9; i++)
+		screen[2 * screenWidth + (fieldWidth + 5 + i)] = "CONTROLS:"[i];
+	for (int i = 0; i < 10; i++)
+		screen[3 * screenWidth + (fieldWidth + 5 + i)] = "ARROW KEYS"[i];
 
 	// Seed rng
 	srand((int)time(nullptr));
@@ -183,9 +187,9 @@ int main()
 		for (int y = 0; y < fieldHeight; y++)
 			screen[(y + 2) * screenWidth + (x + 4)] = ".0*#@"[field[y * fieldWidth + x]];
 
-	WriteConsoleOutputCharacterA(console, screen, screenWidth * screenHeight, { 0, 0 }, &bytesWritten);
+	WriteConsoleOutputCharacterA(console, screen, screenWidth * screenHeight, {0, 0}, &bytesWritten);
 
-	//Initial input
+	// Initial input
 	while (true)
 	{
 		if (GetAsyncKeyState(VK_UP) != 0 || true)
@@ -210,7 +214,7 @@ int main()
 		}
 	}
 
-	//Initial apple position
+	// Initial apple position
 	apple = Point(rand() % (fieldWidth - 2) + 1, rand() % (fieldHeight - 2) + 1);
 
 	bool done = false;
@@ -227,12 +231,16 @@ int main()
 		}
 
 		// Input
-		if (GetAsyncKeyState(VK_UP) != 0) addToInputBuffer(VK_UP);
-		if (GetAsyncKeyState(VK_DOWN) != 0) addToInputBuffer(VK_DOWN);
-		if (GetAsyncKeyState(VK_LEFT) != 0) addToInputBuffer(VK_LEFT);
-		if (GetAsyncKeyState(VK_RIGHT) != 0) addToInputBuffer(VK_RIGHT);
-		if (GetAsyncKeyState(VK_RETURN) != 0) done = true;
-
+		if (GetAsyncKeyState(VK_UP) != 0)
+			addToInputBuffer(VK_UP);
+		if (GetAsyncKeyState(VK_DOWN) != 0)
+			addToInputBuffer(VK_DOWN);
+		if (GetAsyncKeyState(VK_LEFT) != 0)
+			addToInputBuffer(VK_LEFT);
+		if (GetAsyncKeyState(VK_RIGHT) != 0)
+			addToInputBuffer(VK_RIGHT);
+		if (GetAsyncKeyState(VK_RETURN) != 0)
+			done = true;
 
 		// Game logic
 
@@ -241,16 +249,14 @@ int main()
 			snakeEatsSelf())
 			done = true;
 
-
 		// Render output
 		field[apple.y * fieldWidth + apple.x] = 2;
 
-		for (auto& section : snake)
+		for (auto &section : snake)
 			field[section.y * fieldWidth + section.x] = 1;
 
-		for (auto& eatenApple : eatenApples)
+		for (auto &eatenApple : eatenApples)
 			field[eatenApple.y * fieldWidth + eatenApple.x] = 4;
-
 
 		// Draw field to screen
 		for (int x = 0; x < fieldWidth; x++)
@@ -259,20 +265,26 @@ int main()
 
 		field[apple.y * fieldWidth + apple.x] = 0;
 
-		for (auto& section : snake)
+		for (auto &section : snake)
 			field[section.y * fieldWidth + section.x] = 0;
 
-		WriteConsoleOutputCharacterA(console, screen, screenWidth * screenHeight, { 0, 0 }, &bytesWritten);
+		WriteConsoleOutputCharacterA(console, screen, screenWidth * screenHeight, {0, 0}, &bytesWritten);
 	}
 
 	// Game over screen
-	for (int i = 0; i < 9; i++) screen[6 * screenWidth + (fieldWidth + 5 + i)] = "GAME OVER"[i];
-	for (int i = 0; i < 9; i++) screen[7 * screenWidth + (fieldWidth + 5 + i)] = ' ';
-	for (int i = 0; i < 11; i++) screen[8 * screenWidth + (fieldWidth + 5 + i)] = "PRESS ENTER"[i];
-	for (int i = 0; i < 7; i++) screen[9 * screenWidth + (fieldWidth + 5 + i)] = "TO EXIT"[i];
-	WriteConsoleOutputCharacterA(console, screen, screenWidth * screenHeight, { 0, 0 }, &bytesWritten);
+	for (int i = 0; i < 9; i++)
+		screen[6 * screenWidth + (fieldWidth + 5 + i)] = "GAME OVER"[i];
+	for (int i = 0; i < 9; i++)
+		screen[7 * screenWidth + (fieldWidth + 5 + i)] = ' ';
+	for (int i = 0; i < 11; i++)
+		screen[8 * screenWidth + (fieldWidth + 5 + i)] = "PRESS ENTER"[i];
+	for (int i = 0; i < 7; i++)
+		screen[9 * screenWidth + (fieldWidth + 5 + i)] = "TO EXIT"[i];
+	WriteConsoleOutputCharacterA(console, screen, screenWidth * screenHeight, {0, 0}, &bytesWritten);
 
-	while (GetAsyncKeyState(VK_RETURN) == 0) {};
+	while (GetAsyncKeyState(VK_RETURN) == 0)
+	{
+	};
 
 	return 0;
 }
