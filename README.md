@@ -2,6 +2,8 @@
 
 A recreation of the video game Snake.
 
+Download the [latest release](https://github.com/Varulli/snake/releases/latest) or [build it yourself](https://github.com/Varulli/snake#build-instructions).
+
 ![snake-demo](https://github.com/user-attachments/assets/f89224d7-d7bd-4dd3-a80f-4f2e7e07d00f)
 
 ## Build Instructions
